@@ -1,5 +1,5 @@
 import streamlit as st
-from huggingface_hub import InferenceClient
+import requests
 
 st.set_page_config(
     page_title="Translator (EN ↔ BM)",
@@ -7,14 +7,14 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-MODEL_NAME = "mesolitica/t5-base-standard-bahasa-cased"
+HF_API_URL = "https://api-inference.huggingface.co/models/mesolitica/t5-base-standard-bahasa-cased"
 
-@st.cache_resource
-def load_client():
+def hf_translate(text):
     token = st.secrets.get("HF_TOKEN", None)
-    return InferenceClient(token=token)
-
-client = load_client()
+    headers = {"Authorization": f"Bearer {token}"} if token else {}
+    response = requests.post(HF_API_URL, headers=headers, json={"inputs": text}, timeout=30)
+    response.raise_for_status()
+    return response.json()[0]["generated_text"]
 
 LANG_EN = "English"
 LANG_BM = "Bahasa Malaysia"
@@ -103,12 +103,7 @@ if st.button("Translate", key="translate_button", use_container_width=True):
         try:
             with st.spinner("Translating..."):
                 processed_input = f"{t5_prefix} {input_text}"
-                result = client.text2text_generation(
-                    processed_input,
-                    model=MODEL_NAME,
-                    max_new_tokens=150,
-                )
-                translated_text = result if isinstance(result, str) else result[0].generated_text
+                translated_text = hf_translate(processed_input)
 
             st.session_state['translate_history'].append({
                 "source_lang": source_lang,
