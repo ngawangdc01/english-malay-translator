@@ -7,12 +7,12 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-HF_API_URL = "https://api-inference.huggingface.co/models/mesolitica/t5-base-standard-bahasa-cased"
+HF_API_URL = "https://api-inference.huggingface.co/mesolitica/translation-t5-small-standard-bahasa-cased"
 
 def hf_translate(text):
     token = st.secrets.get("HF_TOKEN", None)
     headers = {"Authorization": f"Bearer {token}"} if token else {}
-    response = requests.post(HF_API_URL, headers=headers, json={"inputs": text}, timeout=30)
+    response = requests.post(HF_API_URL, headers=headers, json={"inputs": text}, timeout=60)
     response.raise_for_status()
     return response.json()[0]["generated_text"]
 
