@@ -1,3 +1,15 @@
+---
+title: English Malay Translator
+emoji: 🌐
+colorFrom: blue
+colorTo: green
+sdk: streamlit
+sdk_version: "1.44.1"
+python_version: "3.11"
+app_file: app.py
+pinned: false
+---
+
 # English-Malay Translator
 This project implements an English-to-Malay Translator using the pretrained mesolitica/t5-base-standard-bahasa-cased T5 (Text-to-Text Transfer Transformer) model. The application is built with Streamlit, providing a user-friendly web interface for translating English sentences into Malay, with the ability to view translation history. The model was evaluated using a parallel dataset from the Asian Languages Treebank (ALT) with metrics such as BLEU, ChrF, TER, and METEOR.
 
