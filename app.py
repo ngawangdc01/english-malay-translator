@@ -1,5 +1,6 @@
 import streamlit as st
-import requests
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+import torch
 
 st.set_page_config(
     page_title="Translator (EN ↔ BM)",
@@ -7,14 +8,14 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-HF_API_URL = "https://api-inference.huggingface.co/models/mesolitica/nanot5-base-malaysian-translation-v2.1"
+@st.cache_resource
+def load_model():
+    model_name = "mesolitica/translation-t5-base-standard-bahasa-cased"
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    model = AutoModelForSeq2SeqLM.from_pretrained(model_name, torch_dtype=torch.float16)
+    return tokenizer, model
 
-def hf_translate(text):
-    token = st.secrets.get("HF_TOKEN", None)
-    headers = {"Authorization": f"Bearer {token}"} if token else {}
-    response = requests.post(HF_API_URL, headers=headers, json={"inputs": text}, timeout=60)
-    response.raise_for_status()
-    return response.json()[0]["generated_text"]
+tokenizer, model = load_model()
 
 LANG_EN = "English"
 LANG_BM = "Bahasa Malaysia"
@@ -89,9 +90,9 @@ with output_col:
     )
 
 if source_lang == LANG_EN and target_lang == LANG_BM:
-    t5_prefix = "terjemah Inggeris ke Melayu:"
+    t5_prefix = "terjemah Inggeris ke Melayu: "
 elif source_lang == LANG_BM and target_lang == LANG_EN:
-    t5_prefix = "terjemah Melayu ke Inggeris:"
+    t5_prefix = "terjemah Melayu ke Inggeris: "
 else:
     st.error("Invalid language combination for translation.")
     st.stop()
@@ -102,8 +103,15 @@ if st.button("Translate", key="translate_button", use_container_width=True):
     else:
         try:
             with st.spinner("Translating..."):
-                processed_input = f"{t5_prefix} {input_text}"
-                translated_text = hf_translate(processed_input)
+                processed_input = f"{t5_prefix}{input_text}"
+                inputs = tokenizer(processed_input, return_tensors="pt", max_length=512, truncation=True)
+                outputs = model.generate(
+                    input_ids=inputs.input_ids,
+                    attention_mask=inputs.attention_mask,
+                    max_length=150,
+                    num_beams=4,
+                )
+                translated_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
 
             st.session_state['translate_history'].append({
                 "source_lang": source_lang,
