@@ -7,7 +7,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-HF_API_URL = "https://api-inference.huggingface.co/mesolitica/translation-t5-small-standard-bahasa-cased"
+HF_API_URL = "https://api-inference.huggingface.co/models/mesolitica/nanot5-base-malaysian-translation-v2.1"
 
 def hf_translate(text):
     token = st.secrets.get("HF_TOKEN", None)
