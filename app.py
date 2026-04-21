@@ -42,7 +42,7 @@ with col1_lang:
         available_languages,
         index=available_languages.index(st.session_state['source_lang']),
         key="source_lang_select",
-        on_change=on_source_lang_change
+        on_change=on_source_lang_change,
     )
 
 with col2_swap:
@@ -52,7 +52,6 @@ with col2_swap:
         current = st.session_state['source_lang']
         new_lang = LANG_BM if current == LANG_EN else LANG_EN
         st.session_state['source_lang'] = new_lang
-        st.session_state['source_lang_select'] = new_lang
         st.session_state['translated_text'] = ""
         st.rerun()
 
